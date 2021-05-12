@@ -37,7 +37,8 @@ class ProductSerializer(serializers.ModelSerializer):
                   'product_discount_price', 'product_max_price',
                   'is_stock_total', 'is_freeship', 'category_id',
                   'image' , 'get_per_product_discount_price',
-                  'product_media', 'product_varients', 'get_per_product_discount_price']
+                  'product_media', 'product_varients',
+                  'get_per_product_discount_price', 'product_description', 'product_long_description']
 
 class ProductMiniSerializer(serializers.ModelSerializer):
     class Meta:

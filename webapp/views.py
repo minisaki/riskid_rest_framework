@@ -45,8 +45,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['$product_name', '$product_description', '$url_slug']
     ordering_fields = ['product_discount_price','update_at', 'view_product']
-    filterset_fields = ['category_id', 'is_freeship', 'product_discount_price']
-    # filter_class = Filter
+    # filterset_fields = ['category_id', 'is_freeship', 'product_discount_price']
+    filterset_class  = Filter
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         print(pk)
