@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from .models import Categories, Products, ProductMedia, ProductVarientColor, \
     ProductVarientSize, ProductVarientItems, CustomUser, CustomerUser, \
     CustomerOrder, OrderProduct, ProductUserViewed
@@ -53,25 +55,29 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Categories
         fields = ['id', 'url_slug', 'title', 'products']
 
-
+class CategoryMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categories
+        fields = ['id', 'url_slug', 'title']
 
 class OrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
-        fields = ['customorder_id', 'product_id', 'quantity', 'price', 'amount']
+        fields = ['customorder_id', 'product_id', 'quantity', 'price',
+                  'color', 'size']
 
 class CustomerOrderSerializer(serializers.ModelSerializer):
     orderproduct = OrderProductSerializer(many=True)
     class Meta:
         model = CustomerOrder
-        fields = ['code', 'customer_id', 'orderproduct']
+        fields = ['code', 'customer_id', 'orderproduct', 'get_total_cost']
 
 
 class CustomerUserSerializer(serializers.ModelSerializer):
     customerorder = CustomerOrderSerializer(many=True)
     class Meta:
         model = CustomerUser
-        fields = ['auth_user_id', 'phone', 'address', 'customerorder']
+        fields = ['auth_user_id', 'name', 'phone', 'address', 'customerorder']
 
 
 class ProductUserViewedSerializer(serializers.ModelSerializer):
@@ -80,9 +86,20 @@ class ProductUserViewedSerializer(serializers.ModelSerializer):
         fields = ['product_id', 'customuser_id']
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    customeruser = CustomerUserSerializer(many=True)
-    productuserview = ProductUserViewedSerializer(many=True)
+    # customeruser = CustomerUserSerializer(many=False)
+    # productuserview = ProductUserViewedSerializer(many=True)
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'password', 'user_type', 'customeruser', 'productuserview']
+        fields = ['id', 'username', 'user_type', 'first_name']
 
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        refresh = self.get_token(self.user)
+
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+
+        return data

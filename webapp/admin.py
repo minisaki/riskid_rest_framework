@@ -6,9 +6,14 @@ from .models import CustomUser, Categories, Products, ProductMedia, \
 
 
 # # Register your models here.
+class CustomerOrderInline(admin.TabularInline):
+    model = CustomerOrder
+    extra = 1
+    readonly_fields = ('id',)
 class CustomerUserAdmin(admin.ModelAdmin):
     model = CustomerUser
-    list_display = ['id', 'phone', 'address', 'auth_user_id']
+    list_display = ['id', 'name', 'phone', 'address', 'auth_user_id']
+    inlines = [CustomerOrderInline]
 
 class CustomerUserInline(admin.TabularInline):
     model = CustomerUser
@@ -70,6 +75,6 @@ admin.site.register(ProductUserViewed)
 # order
 class CustomerOrderAdmin(admin.ModelAdmin):
     model = CustomerOrder
-    list_display = ['code', 'customer_id']
+    list_display = ['id', 'code', 'customer_id']
 admin.site.register(CustomerOrder, CustomerOrderAdmin)
 admin.site.register(OrderProduct)

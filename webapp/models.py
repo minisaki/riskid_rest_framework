@@ -18,7 +18,7 @@ class CustomUser(AbstractUser):
         ('4', 'Customer')
     )
     user_type=models.CharField(max_length=255, choices=user_type_choice,
-                               default='1')
+                               default='4')
 
     class Meta:
         ordering = ('id',)
@@ -52,11 +52,12 @@ class CustomerUser(models.Model):
     auth_user_id = models.OneToOneField(CustomUser, on_delete=models.CASCADE,
                                      related_name='customeruser')
     created_at=models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=150, default='')
     phone = models.CharField(max_length=11, default='', blank=True)
     address = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return self.auth_user_id.username
+        return self.name
 
 class Categories(models.Model):
     id=models.AutoField(primary_key=True)
@@ -263,22 +264,49 @@ class CustomerOrder(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.code
+        return self.get_code_order()
+
+    def get_total_cost(self):
+        return sum(item.getAmount() for item in self.orderproduct.all())
+
+    def get_discount(self):
+        if self.coupon_code:
+            discount = (int(self.discount_amt) / Decimal(100) * Decimal(
+                self.get_total_cost()))
+            return discount
+        return Decimal(0)
+
+    def get_ship(self):
+        if self.get_total_cost() >= 0:
+            return 0
+        return Decimal(30)
+
+    def get_total_price_after_discount(self):
+        print(self.get_discount())
+        return self.get_total_cost() + self.get_ship() - self.get_discount()
+
+    def convert_number_to_word(self):
+        pass
+
+    def get_code_order(self):
+        return f'{self.code}_00{self.id}'
 
 class OrderProduct(models.Model):
     customorder_id=models.ForeignKey(CustomerOrder, on_delete=models.CASCADE,
                                      related_name='orderproduct')
     product_id=models.ForeignKey(Products, on_delete=models.DO_NOTHING)
-    coupon_code=models.CharField(max_length=255)
-    discount_amt=models.CharField(max_length=255)
+    color=models.CharField(max_length=255)
+    size=models.CharField(max_length=255)
     product_status=models.CharField(max_length=255)
     quantity = models.IntegerField()
     price = models.FloatField()
-    amount = models.FloatField()
     created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.product_id.product_name
+
+    def getAmount(self):
+        return self.price * self.quantity
 
 class OrderDeliveryStatus(models.Model):
     id = models.AutoField(primary_key=True)
